@@ -35,8 +35,8 @@ def prediction(img_path):
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        img_path = sys.argv[1]
-        scores = prediction(img_path)
+        img = sys.argv[1]
+        scores = prediction(img)
         print(scores[0][1])  # NSFW_score
         exit(0)
 

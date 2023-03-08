@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import pathlib
 import sys
 
 import tensorflow as tf
@@ -18,7 +19,7 @@ def prediction(img_path):
 
     with tf.Session(graph=tf.Graph()) as sess:
         input_type = InputType[InputType.TENSOR.name.upper()]
-        model.build(weights_path='data/open_nsfw-weights.npy', input_type=input_type)
+        model.build(weights_path=pathlib.Path(__file__).parent / 'data/open_nsfw-weights.npy', input_type=input_type)
 
         fn_load_image = create_yahoo_image_loader()
 

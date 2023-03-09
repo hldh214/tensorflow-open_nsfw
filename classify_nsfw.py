@@ -35,11 +35,22 @@ def prediction(img_path):
 
 
 if __name__ == "__main__":
+    # todo: add mode for leave only highest scored image
     if len(sys.argv) == 2:
-        img = sys.argv[1]
-        scores = prediction(img)
-        print(scores[0][1])  # NSFW_score
-        exit(0)
+        path = sys.argv[1]
+
+        if os.path.isfile(path):
+            scores = prediction(path)
+            print(scores[0][1])  # NSFW_score
+            exit(0)
+
+        if os.path.isdir(path):
+            # list images in the folder
+            images = [f for f in os.listdir(path) if os.path.isfile(f) and f.lower().endswith(('.jpg', '.jpeg'))]
+            for img in images:
+                scores = prediction(img)
+                print(img, f'SFW_score: {scores[0][0]:.2%}, NSFW_score: {scores[0][1]:.2%}')
+            exit(0)
 
     # list images in the current directory
     images = [f for f in os.listdir('.') if os.path.isfile(f) and f.lower().endswith(('.jpg', '.jpeg'))]

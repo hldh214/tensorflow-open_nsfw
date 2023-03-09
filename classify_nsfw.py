@@ -11,9 +11,6 @@ from image_utils import create_yahoo_image_loader
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-IMAGE_LOADER_TENSORFLOW = "tensorflow"
-IMAGE_LOADER_YAHOO = "yahoo"
-
 
 def prediction(img_path):
     model = OpenNsfwModel()

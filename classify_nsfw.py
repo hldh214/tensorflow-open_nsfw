@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import os
 import pathlib
-import sys
 
+import fire
 import tensorflow as tf
+import tqdm
 
 from model import OpenNsfwModel, InputType
 from image_utils import create_yahoo_image_loader
@@ -31,27 +32,29 @@ def prediction(img_path):
 
         # [[SFW_score, NSFW_score]]
         # [[0.00922205, 0.99077797]]
-        return predictions
+        return predictions[0][1]
+
+
+def pred_folder(folder_path, keep_only_highest_scored_image=False):
+    images = [str(f.resolve()) for f in pathlib.Path.iterdir(pathlib.Path(folder_path))]
+    images = [f for f in images if os.path.isfile(f) and f.lower().endswith(('.jpg', '.jpeg'))]
+
+    result = []
+    for img in tqdm.tqdm(images, desc=f'Predicting {len(images)} images'):
+        scores = prediction(img)
+        result.append((img, scores))
+
+    if keep_only_highest_scored_image:
+        survivor = max(result, key=lambda x: x[1])
+        # delete others
+        for img, score in result:
+            if img != survivor[0]:
+                os.remove(img)
+
+        result = [survivor]
+
+    return result
 
 
 if __name__ == "__main__":
-    # todo: add mode for leave only highest scored image
-    if len(sys.argv) != 2:
-        print(f'usage: {sys.argv[0]} <path_to_image_or_folder>')
-        exit(1)
-
-    path = sys.argv[1]
-
-    if os.path.isfile(path):
-        scores = prediction(path)
-        print(scores[0][1])  # NSFW_score
-        exit(0)
-
-    if os.path.isdir(path):
-        # list images in the folder
-        images = [str(f.resolve()) for f in pathlib.Path.iterdir(pathlib.Path(path))]
-        images = [f for f in images if os.path.isfile(f) and f.lower().endswith(('.jpg', '.jpeg'))]
-        for img in images:
-            scores = prediction(img)
-            print(img, f'SFW_score: {scores[0][0]:.2%}, NSFW_score: {scores[0][1]:.2%}')
-        exit(0)
+    fire.Fire()

@@ -4,7 +4,7 @@ import pathlib
 
 import fire
 import tensorflow as tf
-import tqdm
+import tqdm.contrib.concurrent
 
 from model import OpenNsfwModel, InputType
 from image_utils import create_yahoo_image_loader
@@ -29,17 +29,16 @@ def prediction(img_path):
 
         # [[SFW_score, NSFW_score]]
         # [[0.00922205, 0.99077797]]
-        return predictions[0][1]
+        return img_path, predictions[0][1]
 
 
-def pred_folder(folder_path, keep_only_highest_scored_image=False):
+def pred_folder(folder_path, keep_only_highest_scored_image=False, num_processes=4):
     images = [str(f.resolve()) for f in pathlib.Path.iterdir(pathlib.Path(folder_path))]
     images = [f for f in images if os.path.isfile(f) and f.lower().endswith(('.jpg', '.jpeg'))]
 
-    result = []
-    for img in tqdm.tqdm(images, desc=f'Predicting {len(images)} images'):
-        scores = prediction(img)
-        result.append((img, scores))
+    result = tqdm.contrib.concurrent.process_map(
+        prediction, images, max_workers=num_processes, desc=f'Predicting {len(images)} images'
+    )
 
     if keep_only_highest_scored_image:
         survivor = max(result, key=lambda x: x[1])

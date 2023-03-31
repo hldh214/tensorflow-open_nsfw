@@ -40,6 +40,9 @@ def pred_folder(folder_path, keep_only_highest_scored_image=False, num_processes
         prediction, images, max_workers=num_processes, desc=f'Predicting {len(images)} images'
     )
 
+    avg_score = sum([x[1] for x in result]) / len(result)
+    open(os.path.join(folder_path, 'avg_score.txt'), 'w').write(str(avg_score))
+
     if keep_only_highest_scored_image:
         survivor = max(result, key=lambda x: x[1])
         # delete others
